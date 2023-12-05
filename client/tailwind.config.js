@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -16,6 +16,12 @@ module.exports = {
       },
     },
     extend: {
+      height: {
+        'fullScreen': 'calc(var(--vh, 1vh) * 100)'
+      },
+      minHeight: {
+        'fullScreen': 'calc(var(--vh, 1vh) * 100)'
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -72,5 +78,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [import("tailwindcss-animate")],
 }

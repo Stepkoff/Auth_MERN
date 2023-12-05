@@ -1,7 +1,7 @@
 import z from "zod";
 
 
-export const signupValidation = z.object({
+export const signUpValidation = z.object({
   name: z
     .string()
     .min(2, { message: "Name must be at least 2 characters." })
@@ -18,7 +18,7 @@ export const signupValidation = z.object({
 });
 
 
-export const signinValidation = z.object({
+export const signInValidation = z.object({
   email: z.string().email('Should be a valid email.'),
   password: z
     .string()
