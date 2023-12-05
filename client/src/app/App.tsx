@@ -7,12 +7,7 @@ import { SignInPage } from '@/pages/SignInPage';
 import { SignUpPage } from '@/pages/SignUpPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ProfilePage } from '@/pages/ProfilePage';
-
-const setWindowInnerHeightIntoCssVariable = () => {
-  const doc = document.documentElement;
-  doc.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-}
-
+import { setWindowInnerHeightIntoCssVariable } from '@/shared/lib/utils';
 
 const router = createBrowserRouter(createRoutesFromElements(
   <Route path='/' element={<AppLayout/>}>
@@ -24,7 +19,6 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path='*' element={<NotFoundPage/>} />
   </Route>
 ))
-
 
 
 export const App = () => {
