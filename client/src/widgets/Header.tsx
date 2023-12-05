@@ -15,11 +15,12 @@ export const Header = () => {
         <Link to='/'>
           <Logo className='text-foreground' />
         </Link>
-        
+
         <nav className='flex gap-4'>
           <NavLink end className={isActiveLink} to={'/'}>Home</NavLink>
-          <NavLink className={isActiveLink} to={'profile'}>Profile</NavLink>
           <NavLink className={isActiveLink} to={'about'}>about</NavLink>
+          <NavLink className={isActiveLink} to={'sign-in'}>Sign In</NavLink>
+          {/* <NavLink className={isActiveLink} to={'profile'}>Profile</NavLink> */}
         </nav>
       </MaxWidthWrapper>
     </header>
