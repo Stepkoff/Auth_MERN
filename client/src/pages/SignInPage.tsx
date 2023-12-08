@@ -27,7 +27,7 @@ export const SignInPage = () => {
   return (
     <MaxWidthWrapper className='mt-16 flex justify-center'>
       <Form {...form}>
-        <div className="w-full sm:w-1/2">
+        <div className="w-full sm:w-2/3 md:w-1/2">
           <form
             onSubmit={form.handleSubmit(handleSignIn)}
             className="flex flex-col gap-5 w-full">
@@ -60,11 +60,11 @@ export const SignInPage = () => {
               )}
             />
 
-            <Button type="submit" className="">
+            <Button type="submit">
               Sign in
             </Button>
 
-            <Button variant={'destructive'} type="submit">
+            <Button variant={'destructive'} type="button">
               Google
             </Button>
 
