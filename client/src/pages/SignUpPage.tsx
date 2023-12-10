@@ -5,7 +5,7 @@ import z from 'zod';
 import { signUpValidation } from '@/shared/lib/validations';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
-import { Button } from '@/shared/ui/button';
+import { Button, buttonVariants } from '@/shared/ui/button';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/shared/ui/use-toast';
 import { useState } from 'react';
@@ -22,10 +22,11 @@ export const SignUpPage = () => {
       username: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const handleSignUp = async (user: z.infer<typeof signUpValidation>) => {
+  const handleSignUp = async ({email, password, username}: z.infer<typeof signUpValidation>) => {
     setIsLoading(true)
     try {
       const response = await fetch('/api/auth/signup', {
@@ -33,7 +34,7 @@ export const SignUpPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(user)
+        body: JSON.stringify({email, password, username})
       });
       const data = await response.json();
       console.log('data', data)
@@ -43,6 +44,7 @@ export const SignUpPage = () => {
         description: data.message,
         variant: data.success ? 'default' : 'destructive'
       })
+      form.reset();
 
     } catch (err) {
       console.log(err)
@@ -53,6 +55,7 @@ export const SignUpPage = () => {
       })
     } finally {
       setIsLoading(false);
+
     }
   }
 
@@ -106,6 +109,20 @@ export const SignUpPage = () => {
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm password</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} />
+                  </FormControl>
+                  <FormMessage className='text-rose-400' />
+                </FormItem>
+              )}
+            />
+
             <Button disabled={isLoading} type="submit">
               {isLoading && <Loader2 className='animate-spin duration-500 mr-2' />}
               Sign up
@@ -120,7 +137,7 @@ export const SignUpPage = () => {
               Already have an account?
               <Link
                 to="/sign-in"
-                className="ml-1">
+                className={buttonVariants({ variant: 'link' })}>
                 Log in
               </Link>
             </p>

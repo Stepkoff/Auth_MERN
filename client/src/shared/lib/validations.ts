@@ -10,8 +10,18 @@ export const signUpValidation = z.object({
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." })
-    .max(40, { message: "Password must be maximum 40 characters." })
-});
+    .max(40, { message: "Password must be maximum 40 characters." }),
+  confirmPassword: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters." })
+    .max(40, { message: "Password must be maximum 40 characters." }),
+})
+.refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword']
+})
+
+// signUpValidation.parse({ password: "asdf", confirmPassword: "qwer" });
 
 
 export const signInValidation = z.object({

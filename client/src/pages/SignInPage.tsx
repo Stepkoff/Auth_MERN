@@ -1,5 +1,5 @@
 import { signInValidation } from '@/shared/lib/validations';
-import { Button } from '@/shared/ui/button';
+import { Button, buttonVariants } from '@/shared/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { MaxWidthWrapper } from '@/shared/ui/maxWidthWrapper';
@@ -72,7 +72,7 @@ export const SignInPage = () => {
               Don&apos;t have an account?
               <Link
                 to="/sign-up"
-                className="ml-1">
+                className={buttonVariants({variant: 'link'})}>
                 Sign up
               </Link>
             </p>
