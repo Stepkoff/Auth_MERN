@@ -6,7 +6,7 @@ import { signUpValidation } from '@/shared/lib/validations';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { Button, buttonVariants } from '@/shared/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/shared/ui/use-toast';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react';
 export const SignUpPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof signUpValidation>>({
     resolver: zodResolver(signUpValidation),
@@ -39,12 +40,18 @@ export const SignUpPage = () => {
       const data = await response.json();
       console.log('data', data)
 
-      toast({
-        title: 'Authentication',
-        description: data.message,
-        variant: data.success ? 'default' : 'destructive'
-      })
-      form.reset();
+      if(!data.success) {
+        toast({
+          title: 'Authentication',
+          description: 'This email address is already in use',
+          variant: 'destructive'
+        })
+      }  else {
+        form.reset();
+        navigate('/')
+      }
+
+
 
     } catch (err) {
       console.log(err)
@@ -55,7 +62,6 @@ export const SignUpPage = () => {
       })
     } finally {
       setIsLoading(false);
-
     }
   }
 

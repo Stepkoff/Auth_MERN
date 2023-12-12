@@ -3,13 +3,18 @@ import { Button, buttonVariants } from '@/shared/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { MaxWidthWrapper } from '@/shared/ui/maxWidthWrapper';
+import { useToast } from '@/shared/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-
 export const SignInPage = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof signInValidation>>({
     resolver: zodResolver(signInValidation),
@@ -19,8 +24,40 @@ export const SignInPage = () => {
     },
   });
 
-  const handleSignIn = () => {
-    console.log('sign in attempt')
+  const handleSignIn = async ({email, password}: z.infer<typeof signInValidation>) => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({email, password})
+      });
+      const data = await response.json();
+      console.log('data', data)
+
+      if(Object.keys(data).includes('success') && !data.success) {
+        toast({
+          title: 'Authentication',
+          description: data.message,
+          variant: 'destructive'
+        })
+      } else {
+        form.reset();
+        navigate('/')
+      }
+
+    } catch (err) {
+      console.log(err)
+      toast({
+        title: 'Something went wrong',
+        description: (err as Error).message,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
 
@@ -60,11 +97,13 @@ export const SignInPage = () => {
               )}
             />
 
-            <Button type="submit">
+            <Button disabled={isLoading} type="submit">
+              {isLoading && <Loader2 className='animate-spin duration-500 mr-2' />}
               Sign in
             </Button>
 
-            <Button variant={'destructive'} type="button">
+            <Button disabled={isLoading} variant={'destructive'} type="button">
+              {isLoading && <Loader2 className='animate-spin duration-500 mr-2' />}
               Google
             </Button>
 
@@ -72,7 +111,7 @@ export const SignInPage = () => {
               Don&apos;t have an account?
               <Link
                 to="/sign-up"
-                className={buttonVariants({variant: 'link'})}>
+                className={buttonVariants({ variant: 'link' })}>
                 Sign up
               </Link>
             </p>
