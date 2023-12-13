@@ -1,7 +1,8 @@
+import { MaxWidthWrapper } from '@/shared/ui/maxWidthWrapper'
 
 
 export const NotFoundPage = () => {
   return (
-    <div> 404 page not found</div>
+    <MaxWidthWrapper>404 page not found</MaxWidthWrapper>
   )
 }

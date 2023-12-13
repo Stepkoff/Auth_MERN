@@ -1,3 +1,4 @@
+import { useAppDispatch, useAppSelector } from '@/shared/hooks';
 import { signInValidation } from '@/shared/lib/validations';
 import { Button, buttonVariants } from '@/shared/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
@@ -6,14 +7,15 @@ import { MaxWidthWrapper } from '@/shared/ui/maxWidthWrapper';
 import { useToast } from '@/shared/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import { setCurrentUser, setIsLoading as setUserLoading } from '@/entities/user';
 import z from 'zod';
 
 export const SignInPage = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = useAppSelector(state => state.user.isLoading);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof signInValidation>>({
@@ -24,26 +26,27 @@ export const SignInPage = () => {
     },
   });
 
-  const handleSignIn = async ({email, password}: z.infer<typeof signInValidation>) => {
-    setIsLoading(true)
+  const handleSignIn = async ({ email, password }: z.infer<typeof signInValidation>) => {
+    dispatch(setUserLoading(true))
     try {
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({email, password})
+        body: JSON.stringify({ email, password })
       });
       const data = await response.json();
       console.log('data', data)
 
-      if(Object.keys(data).includes('success') && !data.success) {
+      if (Object.keys(data).includes('success') && !data.success) {
         toast({
           title: 'Authentication',
           description: data.message,
           variant: 'destructive'
         })
       } else {
+        dispatch(setCurrentUser(data));
         form.reset();
         navigate('/')
       }
@@ -56,7 +59,7 @@ export const SignInPage = () => {
         variant: 'destructive',
       })
     } finally {
-      setIsLoading(false)
+      dispatch(setUserLoading(false))
     }
   }
 

@@ -1,7 +1,10 @@
+import { MaxWidthWrapper } from '@/shared/ui/maxWidthWrapper'
 
 
 export const AboutPage = () => {
   return (
-    <div>AboutPage</div>
+    <MaxWidthWrapper>
+      About page
+    </MaxWidthWrapper>
   )
 }
