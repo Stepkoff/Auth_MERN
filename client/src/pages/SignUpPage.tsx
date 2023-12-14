@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/shared/ui/use-toast';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { OAuthButton } from '@/features/oAuth';
 
 
 export const SignUpPage = () => {
@@ -48,9 +49,8 @@ export const SignUpPage = () => {
         })
       }  else {
         form.reset();
-        navigate('/')
+        navigate('/sign-in')
       }
-
 
 
     } catch (err) {
@@ -134,10 +134,7 @@ export const SignUpPage = () => {
               Sign up
             </Button>
 
-            <Button disabled={isLoading} variant={'destructive'} type="button">
-              {isLoading && <Loader2 className='animate-spin duration-500 mr-2' />}
-              Google
-            </Button>
+            <OAuthButton isLoading={isLoading} />
 
             <p className="mt-2">
               Already have an account?

@@ -38,7 +38,6 @@ const userSlice = createSlice({
       state.errorMessage = null;
     },
     setError: (state, action: PayloadAction<{isError: boolean, message: string | null}>) => {
-      state.isLoading = false;
       state.isError = action.payload.isError;
       state.errorMessage = action.payload.message;
     }

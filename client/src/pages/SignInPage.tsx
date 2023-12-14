@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { setCurrentUser, setIsLoading as setUserLoading } from '@/entities/user';
 import z from 'zod';
+import { OAuthButton } from '@/features/oAuth';
 
 export const SignInPage = () => {
   const dispatch = useAppDispatch();
@@ -105,10 +106,7 @@ export const SignInPage = () => {
               Sign in
             </Button>
 
-            <Button disabled={isLoading} variant={'destructive'} type="button">
-              {isLoading && <Loader2 className='animate-spin duration-500 mr-2' />}
-              Google
-            </Button>
+            <OAuthButton isLoading={isLoading} />
 
             <p className="mt-2">
               Don&apos;t have an account?
