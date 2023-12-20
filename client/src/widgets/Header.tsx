@@ -6,7 +6,7 @@ import { NavLink, Link } from 'react-router-dom'
 import { useAppSelector } from '@/shared/hooks'
 
 const isActiveLink = ({ isActive }: { isActive: boolean }): string => {
-  return cn('font-semibold text-secondary', isActive ? 'underline underline-offset-[6px]' : '')
+  return cn('font-semibold text-secondary flex items-center gap-2', isActive ? 'underline underline-offset-[6px]' : '')
 }
 
 export const Header = () => {
@@ -24,8 +24,9 @@ export const Header = () => {
             currentUser ?
               <>
                 <NavLink end className={isActiveLink} to={'/'}>Home</NavLink>
-                <NavLink className={isActiveLink} to={'about'}>about</NavLink>
+                <NavLink className={isActiveLink} to={'about'}>About us</NavLink>
                 <NavLink className={isActiveLink} to={'profile'}>
+                  <span>Profile</span>
                   <img
                     className='block rounded-full w-9 h-9 object-cover'
                     src={currentUser.profilePicture}
@@ -36,7 +37,7 @@ export const Header = () => {
               :
               <>
                 <NavLink end className={isActiveLink} to={'/'}>Home</NavLink>
-                <NavLink className={isActiveLink} to={'about'}>about</NavLink>
+                <NavLink className={isActiveLink} to={'about'}>About</NavLink>
                 <NavLink className={isActiveLink} to={'sign-in'}>Sign In</NavLink>
                 <NavLink className={isActiveLink} to={'sign-up'}>Sign up</NavLink>
               </>
