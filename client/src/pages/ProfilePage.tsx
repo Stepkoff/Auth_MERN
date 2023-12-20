@@ -8,13 +8,19 @@ import { MaxWidthWrapper } from '@/shared/ui/maxWidthWrapper'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/shared/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage'
 import z from 'zod';
+import { firebaseApp } from '@/app/firebase';
+import { useToast } from '@/shared/ui/use-toast';
 
 export const ProfilePage = () => {
   const { currentUser, isLoading } = useAppSelector(state => state.user);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [downloadPercent, setDownloadPercent] = useState(0);
+  const [downloadURL, setDownloadURL] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof profileValidation>>({
     resolver: zodResolver(profileValidation),
@@ -27,24 +33,56 @@ export const ProfilePage = () => {
     },
   });
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = async (file: File) => {
+    const storage = getStorage(firebaseApp);
+    const fileName = file.name.split('.')[0] + (new Date().getTime());
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
 
-  }
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setDownloadPercent(Math.round(progress))
+      },
+      (err) => {
+        console.log('Upload Error:', err);
+        toast({
+          title: 'Image Upload',
+          description: (err as Error).message,
+          variant: 'destructive',
+        })
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref)
+          .then((downloadUrl) => {
+            setDownloadURL(downloadUrl);
+          })
+        toast({
+          title: 'Uploading',
+          description: 'Image uploaded successfully',
+          variant: 'default',
+        })
+      }
+    );
+  };
 
   const handleUpdate = async (data: z.infer<typeof profileValidation>) => {
     console.log('submit', data)
 
-    if(data.file) {
-      handleFileUpload(data.file);
+    if (data.file) {
+      await handleFileUpload(data.file);
+
+
+
     }
 
 
   }
 
-  const handlePictureClick = () => {
+  const handlePictureClick = useCallback(() => {
     fileRef.current?.click()
-  }
+  }, []);
 
   return (
     <MaxWidthWrapper className='flex flex-col items-center'>
@@ -64,6 +102,11 @@ export const ProfilePage = () => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+
+      {downloadPercent > 0 && downloadPercent < 100
+        ? <div className='mt-2 text-sm text-green-400'>File is uploading {downloadPercent}%</div>
+        : null
+      }
 
       <Form {...form}>
         <div className="w-full sm:w-2/3 md:w-1/2 mb-10">
