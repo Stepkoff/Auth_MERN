@@ -1,4 +1,4 @@
-import { useAppSelector } from '@/shared/hooks'
+import { useAppDispatch, useAppSelector } from '@/shared/hooks'
 import mergeRefs from '@/shared/lib/utils';
 import { profileValidation } from '@/shared/lib/validations';
 import { Button } from '@/shared/ui/button';
@@ -14,13 +14,16 @@ import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/
 import z from 'zod';
 import { firebaseApp } from '@/app/firebase';
 import { useToast } from '@/shared/ui/use-toast';
+import { User, setIsLoading, signOut, updateCurrentUser } from '@/entities/user';
 
 export const ProfilePage = () => {
+  const dispatch = useAppDispatch();
   const { currentUser, isLoading } = useAppSelector(state => state.user);
   const fileRef = useRef<HTMLInputElement>(null);
   const [downloadPercent, setDownloadPercent] = useState(0);
-  const [downloadURL, setDownloadURL] = useState<string | null>(null);
   const { toast } = useToast();
+
+  console.log('currentUser', currentUser);
 
   const form = useForm<z.infer<typeof profileValidation>>({
     resolver: zodResolver(profileValidation),
@@ -33,56 +36,103 @@ export const ProfilePage = () => {
     },
   });
 
-  const handleFileUpload = async (file: File) => {
-    const storage = getStorage(firebaseApp);
-    const fileName = file.name.split('.')[0] + (new Date().getTime());
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+  const handleFileUpload = async (file: File | undefined): Promise<string | undefined> => {
+    return new Promise((resolve) => {
+      if (!file) {
+        resolve(undefined)
+      } else {
 
+        const storage = getStorage(firebaseApp);
+        const fileName = file.name.split('.')[0] + (new Date().getTime());
+        const storageRef = ref(storage, fileName);
+        const uploadTask = uploadBytesResumable(storageRef, file);
 
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setDownloadPercent(Math.round(progress))
-      },
-      (err) => {
-        console.log('Upload Error:', err);
-        toast({
-          title: 'Image Upload',
-          description: (err as Error).message,
-          variant: 'destructive',
-        })
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref)
-          .then((downloadUrl) => {
-            setDownloadURL(downloadUrl);
-          })
-        toast({
-          title: 'Uploading',
-          description: 'Image uploaded successfully',
-          variant: 'default',
-        })
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setDownloadPercent(Math.round(progress))
+          },
+          (err) => {
+            console.log('Upload Error:', err);
+            toast({
+              title: 'Image Upload',
+              description: (err as Error).message,
+              variant: 'destructive',
+            })
+          },
+          async () => {
+            await getDownloadURL(uploadTask.snapshot.ref)
+              .then((downloadUrl) => {
+                resolve(downloadUrl);
+              })
+            toast({
+              title: 'Uploading',
+              description: 'Image uploaded successfully',
+              variant: 'default',
+            })
+          }
+        );
       }
-    );
+    })
   };
 
+
   const handleUpdate = async (data: z.infer<typeof profileValidation>) => {
+    dispatch(setIsLoading(true))
     console.log('submit', data)
+    const downloadUrl = await handleFileUpload(data.file);
 
-    if (data.file) {
-      await handleFileUpload(data.file);
-
-
-
+    const responseBody = {
+      username: data.username,
+      email: data.email,
+      ...(data.password ? { password: data.password } : {}),
+      ...(downloadUrl ? { profilePicture: downloadUrl } : {}),
     }
 
+    const response = await fetch(`/api/user/update/${currentUser?._id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(responseBody)
+    })
 
+    if (response.ok) {
+      const responseData:User = await response.json();
+      console.log('response server', responseData)
+      form.control._defaultValues.username = responseData.username
+      dispatch(updateCurrentUser({
+        username: responseData.username,
+        email: responseData.email,
+        __v: responseData.__v,
+        _id: responseData._id,
+        createdAt: responseData.createdAt,
+        updatedAt: responseData.updatedAt,
+        profilePicture: responseData.profilePicture
+      }))
+      form.reset()
+    } else {
+      toast({
+        title: 'Something went wrong',
+        description: 'Server error, try again',
+        variant: 'destructive',
+      })
+    }
+    dispatch(setIsLoading(false))
   }
 
   const handlePictureClick = useCallback(() => {
     fileRef.current?.click()
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/signout');
+      dispatch(signOut())
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <MaxWidthWrapper className='flex flex-col items-center'>
@@ -199,8 +249,8 @@ export const ProfilePage = () => {
               Update
             </Button>
             <div className='flex justify-between'>
-              <Button variant={'link'} className={'p-0 text-rose-500'} type='button'>Delete Account</Button>
-              <Button variant={'link'} className={'p-0 text-rose-500'} type='button'>Sign out</Button>
+              <Button disabled={isLoading} variant={'link'} className={'p-0 text-rose-500'} type='button'>Delete Account</Button>
+              <Button disabled={isLoading} onClick={handleSignOut} variant={'link'} className={'p-0 text-rose-500'} type='button'>Sign out</Button>
             </div>
           </form>
         </div>

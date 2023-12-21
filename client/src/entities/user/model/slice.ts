@@ -40,12 +40,21 @@ const userSlice = createSlice({
     setError: (state, action: PayloadAction<{isError: boolean, message: string | null}>) => {
       state.isError = action.payload.isError;
       state.errorMessage = action.payload.message;
+    },
+    updateCurrentUser: (state, action:PayloadAction<User>) => {
+      state.currentUser = action.payload
+    },
+    signOut: (state) => {
+      state.currentUser = null
+      state.errorMessage = null
+      state.isError = false
+      state.isLoading = false
     }
   }
 })
 
 
-export const {setError, setCurrentUser, setIsLoading} = userSlice.actions;
+export const {setError, setCurrentUser, setIsLoading, updateCurrentUser, signOut} = userSlice.actions;
 export const userReducer =  userSlice.reducer
 
 
